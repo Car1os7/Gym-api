@@ -3,6 +3,49 @@ import prisma from '../utils/database';
 import { TreinoSchema, UpdateTreinoSchema } from '../models/schemas';
 
 export class TreinoController {
+  static async search(req: Request, res: Response) {
+  try {
+    const { nome, dificuldade, duracaoMin, duracaoMax } = req.query;
+    
+    const where: any = {};
+    
+    if (nome) {
+      where.nome = {
+        contains: nome as string
+      };
+    }
+    
+    if (dificuldade) {
+      where.dificuldade = dificuldade as string;
+    }
+    
+    if (duracaoMin || duracaoMax) {
+      where.duracao = {};
+      if (duracaoMin) where.duracao.gte = parseInt(duracaoMin as string);
+      if (duracaoMax) where.duracao.lte = parseInt(duracaoMax as string);
+    }
+
+    const treinos = await prisma.treino.findMany({
+      where,
+      include: {
+        membro: {
+          include: {
+            plano: true
+          }
+        }
+      }
+    });
+
+    res.json({
+      results: treinos,
+      total: treinos.length,
+      filters: { nome, dificuldade, duracaoMin, duracaoMax }
+    });
+  } catch (error) {
+    console.error('❌ Erro na busca de treinos:', error);
+    res.status(500).json({ error: 'Erro na busca de treinos' });
+  }
+}
   static async getAll(req: Request, res: Response) {
     try {
       const treinos = await prisma.treino.findMany({

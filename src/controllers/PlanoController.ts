@@ -3,6 +3,37 @@ import prisma from '../utils/database';
 import { PlanoSchema, UpdatePlanoSchema } from '../models/schemas';
 
 export class PlanoController {
+  // 📊 MÉTODO NOVO - ESTATÍSTICAS DOS PLANOS
+static async getStats(req: Request, res: Response) {
+  try {
+    const planos = await prisma.plano.findMany({
+      include: {
+        membros: true
+      }
+    });
+
+    const stats = planos.map(plano => ({
+      id: plano.id,
+      nome: plano.nome,
+      preco: plano.preco,
+      totalMembros: plano.membros.length,
+      receitaMensal: plano.preco * plano.membros.length
+    }));
+
+    const receitaTotal = stats.reduce((total, plano) => total + plano.receitaMensal, 0);
+
+    res.json({
+      planos: stats,
+      receitaTotal,
+      planoMaisPopular: stats.reduce((prev, current) => 
+        (prev.totalMembros > current.totalMembros) ? prev : current
+      )
+    });
+  } catch (error) {
+    console.error('❌ Erro ao buscar estatísticas dos planos:', error);
+    res.status(500).json({ error: 'Erro ao buscar estatísticas' });
+  }
+}
   static async getAll(req: Request, res: Response) {
     try {
       const planos = await prisma.plano.findMany();

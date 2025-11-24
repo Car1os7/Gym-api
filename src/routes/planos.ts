@@ -2,7 +2,17 @@ import { Router } from 'express';
 import { PlanoController } from '../controllers/PlanoController';
 
 const router = Router();
-
+/**
+ * @swagger
+ * /api/planos/stats:
+ *   get:
+ *     summary: Retorna estatísticas dos planos
+ *     tags: [Planos]
+ *     responses:
+ *       200:
+ *         description: Estatísticas dos planos
+ */
+router.get('/stats', PlanoController.getStats);
 /**
  * @swagger
  * /api/planos:

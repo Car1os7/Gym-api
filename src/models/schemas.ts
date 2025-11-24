@@ -1,25 +1,25 @@
 import { z } from 'zod';
 
 export const PlanoSchema = z.object({
-  nome: z.string().min(1, "Nome ? obrigat?rio"),
+  nome: z.string().min(1, "Nome é obrigatório"),
   descricao: z.string().optional(),
-  preco: z.number().positive("Pre?o deve ser positivo"),
-  duracaoDias: z.number().int().positive("Dura??o deve ser positiva")
+  preco: z.number().positive("Preço deve ser positivo"),
+  duracaoDias: z.number().int().positive("Duração deve ser positiva")
 });
 
 export const MembroSchema = z.object({
-  nome: z.string().min(1, "Nome ? obrigat?rio"),
-  email: z.string().email("Email inv?lido"),
+  nome: z.string().min(1, "Nome é obrigatório"),
+  email: z.string().email("Email inválido"),
   telefone: z.string().optional(),
-  dataNascimento: z.string().datetime("Data de nascimento inv?lida"),
+  dataNascimento: z.string().datetime("Data de nascimento inválida"),
   planoId: z.number().int().positive("PlanoId deve ser positivo")
 });
 
 export const TreinoSchema = z.object({
-  nome: z.string().min(1, "Nome ? obrigat?rio"),
+  nome: z.string().min(1, "Nome da aula é obrigatório"),
   descricao: z.string().optional(),
-  duracao: z.number().int().positive("Dura??o deve ser positiva"),
-  dificuldade: z.enum(["Iniciante", "Intermedi?rio", "Avan?ado"]),
+  duracao: z.number().int().positive("Duração deve ser positiva"),
+  dificuldade: z.enum(["Iniciante", "Intermediário", "Avançado"]),
   membroId: z.number().int().positive("MembroId deve ser positivo")
 });
 

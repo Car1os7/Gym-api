@@ -4,9 +4,9 @@ const options = {
   definition: {
     openapi: '3.0.0',
     info: {
-      title: 'Gym API',
-      version: '1.0.0',
-      description: 'API para gerenciamento de academia',
+      title: 'Gym API - Sistema Completo',
+      version: '2.0.0',
+      description: 'API completa para gerenciamento de academia com busca avançada, estatísticas e relatórios',
       contact: {
         name: 'Equipe de Desenvolvimento',
         members: [
@@ -69,6 +69,90 @@ const options = {
             createdAt: { type: 'string', format: 'date-time' },
             updatedAt: { type: 'string', format: 'date-time' },
             membro: { $ref: '#/components/schemas/Membro' }
+          }
+        },
+        // 🔍 NOVOS SCHEMAS PARA BUSCA E ESTATÍSTICAS
+        BuscaMembros: {
+          type: 'object',
+          properties: {
+            results: {
+              type: 'array',
+              items: { $ref: '#/components/schemas/Membro' }
+            },
+            total: { type: 'integer' },
+            filters: {
+              type: 'object',
+              properties: {
+                nome: { type: 'string' },
+                email: { type: 'string' },
+                telefone: { type: 'string' }
+              }
+            }
+          }
+        },
+        BuscaTreinos: {
+          type: 'object',
+          properties: {
+            results: {
+              type: 'array',
+              items: { $ref: '#/components/schemas/Treino' }
+            },
+            total: { type: 'integer' },
+            filters: {
+              type: 'object',
+              properties: {
+                nome: { type: 'string' },
+                dificuldade: { type: 'string' },
+                duracaoMin: { type: 'integer' },
+                duracaoMax: { type: 'integer' }
+              }
+            }
+          }
+        },
+        EstatisticasMembros: {
+          type: 'object',
+          properties: {
+            totalMembros: { type: 'integer' },
+            totalPlanos: { type: 'integer' },
+            totalTreinos: { type: 'integer' },
+            membroMaisAtivo: {
+              type: 'object',
+              properties: {
+                id: { type: 'integer' },
+                nome: { type: 'string' },
+                totalTreinos: { type: 'integer' },
+                plano: { type: 'string' }
+              }
+            }
+          }
+        },
+        EstatisticasPlanos: {
+          type: 'object',
+          properties: {
+            planos: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  id: { type: 'integer' },
+                  nome: { type: 'string' },
+                  preco: { type: 'number' },
+                  totalMembros: { type: 'integer' },
+                  receitaMensal: { type: 'number' }
+                }
+              }
+            },
+            receitaTotal: { type: 'number' },
+            planoMaisPopular: {
+              type: 'object',
+              properties: {
+                id: { type: 'integer' },
+                nome: { type: 'string' },
+                preco: { type: 'number' },
+                totalMembros: { type: 'integer' },
+                receitaMensal: { type: 'number' }
+              }
+            }
           }
         }
       }

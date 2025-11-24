@@ -2,7 +2,39 @@ import { Router } from 'express';
 import { TreinoController } from '../controllers/TreinoController';
 
 const router = Router();
-
+/**
+ * @swagger
+ * /api/treinos/search:
+ *   get:
+ *     summary: Busca treinos com filtros avançados
+ *     tags: [Treinos]
+ *     parameters:
+ *       - in: query
+ *         name: nome
+ *         schema:
+ *           type: string
+ *         description: Buscar por nome do treino
+ *       - in: query
+ *         name: dificuldade
+ *         schema:
+ *           type: string
+ *           enum: [Iniciante, Intermediário, Avançado]
+ *         description: Filtrar por dificuldade
+ *       - in: query
+ *         name: duracaoMin
+ *         schema:
+ *           type: integer
+ *         description: Duração mínima em minutos
+ *       - in: query
+ *         name: duracaoMax
+ *         schema:
+ *           type: integer
+ *         description: Duração máxima em minutos
+ *     responses:
+ *       200:
+ *         description: Resultados da busca
+ */
+router.get('/search', TreinoController.search);
 /**
  * @swagger
  * /api/treinos:

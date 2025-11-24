@@ -1,6 +1,6 @@
 import express from 'express';
 import swaggerUi from 'swagger-ui-express';
-import { specs } from '../docs/swagger';
+import { specs } from '../docs/swagger'; 
 
 import planosRoutes from './routes/planos';
 import membrosRoutes from './routes/membros';
@@ -13,7 +13,6 @@ app.use(express.json());
 
 // Swagger Documentation
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
-
 // Routes
 app.use('/api/planos', planosRoutes);
 app.use('/api/membros', membrosRoutes);

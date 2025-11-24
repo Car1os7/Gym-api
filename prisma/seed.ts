@@ -10,7 +10,7 @@ async function main() {
   await prisma.membro.deleteMany();
   await prisma.plano.deleteMany();
 
-  // Criar planos
+  // Criar planos de academia
   const planoBasico = await prisma.plano.create({
     data: {
       nome: 'Plano Básico',
@@ -23,7 +23,7 @@ async function main() {
   const planoPremium = await prisma.plano.create({
     data: {
       nome: 'Plano Premium',
-      descricao: 'Acesso ilimitado + aulas especiais',
+      descricao: 'Acesso ilimitado + aulas em grupo',
       preco: 149.90,
       duracaoDias: 30
     }
@@ -38,7 +38,7 @@ async function main() {
     }
   });
 
-  // Criar membros
+  // Criar membros (alunos)
   const julio = await prisma.membro.create({
     data: {
       nome: 'Julio Balestrin',
@@ -69,11 +69,11 @@ async function main() {
     }
   });
 
-  // Criar treinos
+  // Criar treinos (aulas agendadas)
   await prisma.treino.create({
     data: {
-      nome: 'Treino de Peito e Tríceps',
-      descricao: 'Foco em desenvolvimento muscular superior',
+      nome: 'Musculação - Superior',
+      descricao: 'Treino de peito, ombros e tríceps',
       duracao: 60,
       dificuldade: 'Avançado',
       membroId: julio.id
@@ -82,8 +82,8 @@ async function main() {
 
   await prisma.treino.create({
     data: {
-      nome: 'Treino Iniciante Full Body',
-      descricao: 'Treino completo para iniciantes',
+      nome: 'Aula de Yoga',
+      descricao: 'Yoga para iniciantes',
       duracao: 45,
       dificuldade: 'Iniciante',
       membroId: leo.id
@@ -92,8 +92,8 @@ async function main() {
 
   await prisma.treino.create({
     data: {
-      nome: 'Treino Avançado Costas e Bíceps',
-      descricao: 'Treino pesado para desenvolvimento dorsal',
+      nome: 'Personal Training',
+      descricao: 'Treino personalizado completo',
       duracao: 75,
       dificuldade: 'Avançado',
       membroId: carlao.id
@@ -102,9 +102,9 @@ async function main() {
 
   await prisma.treino.create({
     data: {
-      nome: 'Treino de Pernas',
-      descricao: 'Foco em quadríceps e posterior',
-      duracao: 60,
+      nome: 'Aeróbico - Esteira',
+      descricao: 'Cardio para queima de gordura',
+      duracao: 30,
       dificuldade: 'Intermediário',
       membroId: julio.id
     }
