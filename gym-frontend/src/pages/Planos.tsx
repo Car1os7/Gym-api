@@ -1,202 +1,133 @@
-import React, { useEffect, useState } from 'react';
+﻿import React, { useState } from 'react';
 import {
   Box,
-  Typography,
   Card,
   CardContent,
-  Grid,
-  Chip,
-  LinearProgress,
-  Alert,
+  Typography,
   Button,
+  Chip
 } from '@mui/material';
-import {
-  Add as AddIcon,
-  TrendingUp as TrendingUpIcon,
-} from '@mui/icons-material';
-import { Plano, PlanoStats } from '../types';
-import { planosService } from '../services/api';
+import { Add, People, AttachMoney } from '@mui/icons-material';
+
+// Mock data temporário
+const mockPlanos = [
+  {
+    id: '1',
+    nome: 'Plano Básico',
+    descricao: 'Acesso à academia em horário comercial',
+    preco: 89.90,
+    duracao: 30,
+    tipo: 'mensal' as const,
+    beneficios: ['Acesso à academia', 'Avaliação física', 'App mobile'],
+    status: 'ativo' as const
+  },
+  {
+    id: '2',
+    nome: 'Plano Premium',
+    descricao: 'Acesso ilimitado + aulas em grupo',
+    preco: 129.90,
+    duracao: 30,
+    tipo: 'mensal' as const,
+    beneficios: ['Acesso ilimitado', 'Aulas em grupo', 'Personal trainer', 'App mobile'],
+    status: 'ativo' as const
+  }
+];
 
 export const Planos: React.FC = () => {
-  const [planos, setPlanos] = useState<Plano[]>([]);
-  const [planoStats, setPlanoStats] = useState<PlanoStats | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const fetchData = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      const [planosResponse, statsResponse] = await Promise.all([
-        planosService.getAll(),
-        planosService.getStats(),
-      ]);
-
-      setPlanos(planosResponse.data);
-      setPlanoStats(statsResponse.data);
-    } catch (err) {
-      setError('Erro ao carregar dados dos planos');
-      console.error('Erro:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  const getColorByPrice = (preco: number) => {
-    if (preco < 100) return 'success';
-    if (preco < 200) return 'warning';
-    return 'error';
-  };
-
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL'
-    }).format(value);
-  };
+  const [planos] = useState(mockPlanos);
 
   return (
-    <Box>
-      {/* Cabeçalho */}
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Typography variant="h4">
-          Planos da Academia
+    <Box p={3}>
+      <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
+        <Typography variant="h4" component="h1" fontWeight="bold">
+          📋 Planos
         </Typography>
-        <Button variant="contained" startIcon={<AddIcon />}>
+        <Button variant="contained" startIcon={<Add />}>
           Novo Plano
         </Button>
       </Box>
 
-      {/* Loading */}
-      {loading && <LinearProgress sx={{ mb: 2 }} />}
-
-      {/* Erro */}
-      {error && (
-        <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>
-          {error}
-        </Alert>
-      )}
-
-      {/* Estatísticas dos Planos */}
-      {planoStats && (
-        <Card sx={{ mb: 3, bgcolor: 'primary.main', color: 'white' }}>
+      {/* Cards de estatísticas */}
+      <Box display="flex" gap={3} mb={4}>
+        <Card sx={{ flex: 1 }}>
           <CardContent>
-            <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-              <TrendingUpIcon sx={{ mr: 1 }} />
-              <Typography variant="h6">
-                Resumo Financeiro
-              </Typography>
+            <Box display="flex" alignItems="center" gap={1} mb={1}>
+              <People color="primary" />
+              <Typography variant="h6">Total de Planos</Typography>
             </Box>
-            <Grid container spacing={2}>
-              <Grid item xs={12} sm={4}>
-                <Typography variant="body2">Receita Total Mensal</Typography>
-                <Typography variant="h5">
-                  {formatCurrency(planoStats.receitaTotal)}
-                </Typography>
-              </Grid>
-              <Grid item xs={12} sm={4}>
-                <Typography variant="body2">Plano Mais Popular</Typography>
-                <Typography variant="h6">
-                  {planoStats.planoMaisPopular.nome}
-                </Typography>
-              </Grid>
-              <Grid item xs={12} sm={4}>
-                <Typography variant="body2">Total de Membros</Typography>
-                <Typography variant="h6">
-                  {planoStats.planos.reduce((total, plano) => total + plano.totalMembros, 0)}
-                </Typography>
-              </Grid>
-            </Grid>
+            <Typography variant="h4" color="primary">
+              {planos.length}
+            </Typography>
           </CardContent>
         </Card>
-      )}
 
-      {/* Lista de Planos */}
-      <Grid container spacing={3}>
-        {planos.map((plano) => {
-          const planoStat = planoStats?.planos.find(p => p.id === plano.id);
-          
-          return (
-            <Grid item xs={12} md={6} lg={4} key={plano.id}>
-              <Card 
-                sx={{ 
-                  height: '100%',
-                  border: planoStat?.totalMembros > 0 ? 2 : 1,
-                  borderColor: planoStat?.totalMembros > 0 ? 'primary.main' : 'divider'
-                }}
-              >
-                <CardContent>
-                  {/* Cabeçalho do Plano */}
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
-                    <Typography variant="h6" component="div">
-                      {plano.nome}
-                    </Typography>
-                    <Chip 
-                      label={formatCurrency(plano.preco)} 
-                      color={getColorByPrice(plano.preco)}
-                      size="small"
-                    />
-                  </Box>
+        <Card sx={{ flex: 1 }}>
+          <CardContent>
+            <Box display="flex" alignItems="center" gap={1} mb={1}>
+              <AttachMoney color="success" />
+              <Typography variant="h6">Receita Mensal</Typography>
+            </Box>
+            <Typography variant="h4" color="success.main">
+              R$ {planos.reduce((total, plano) => total + plano.preco, 0).toFixed(2)}
+            </Typography>
+          </CardContent>
+        </Card>
+      </Box>
 
-                  {/* Descrição */}
-                  <Typography variant="body2" color="textSecondary" sx={{ mb: 2 }}>
-                    {plano.descricao}
+      {/* Lista de planos */}
+      <Box display="grid" gridTemplateColumns="repeat(auto-fill, minmax(350px, 1fr))" gap={3}>
+        {planos.map(plano => (
+          <Card key={plano.id} sx={{ height: '100%' }}>
+            <CardContent>
+              <Typography variant="h6" gutterBottom>
+                {plano.nome}
+              </Typography>
+              
+              <Typography variant="body2" color="text.secondary" paragraph>
+                {plano.descricao}
+              </Typography>
+              
+              <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+                <Typography variant="h5" color="primary">
+                  R$ {plano.preco.toFixed(2)}
+                </Typography>
+                <Chip 
+                  label={plano.tipo} 
+                  color="primary" 
+                  variant="outlined"
+                  size="small"
+                />
+              </Box>
+              
+              <Typography variant="subtitle2" gutterBottom>
+                Benefícios:
+              </Typography>
+              
+              <Box component="ul" sx={{ pl: 2, m: 0 }}>
+                {plano.beneficios.map((beneficio, index) => (
+                  <Typography 
+                    key={index} 
+                    component="li" 
+                    variant="body2"
+                    color="text.secondary"
+                  >
+                    {beneficio}
                   </Typography>
-
-                  {/* Duração */}
-                  <Typography variant="body2" sx={{ mb: 1 }}>
-                    📅 Duração: {plano.duracaoDias} dias
-                  </Typography>
-
-                  {/* Estatísticas do Plano */}
-                  {planoStat && (
-                    <Box sx={{ mt: 2, p: 1, bgcolor: 'grey.50', borderRadius: 1 }}>
-                      <Typography variant="body2" gutterBottom>
-                        <strong>Estatísticas:</strong>
-                      </Typography>
-                      <Typography variant="body2" color="textSecondary">
-                        👥 {planoStat.totalMembros} membro(s)
-                      </Typography>
-                      <Typography variant="body2" color="textSecondary">
-                        💰 {formatCurrency(planoStat.receitaMensal)}/mês
-                      </Typography>
-                    </Box>
-                  )}
-
-                  {/* Badge de Popularidade */}
-                  {planoStat && planoStat.totalMembros > 0 && (
-                    <Box sx={{ mt: 1 }}>
-                      <Chip 
-                        label={`${planoStat.totalMembros} membro(s)`} 
-                        color="primary" 
-                        variant="outlined"
-                        size="small"
-                      />
-                    </Box>
-                  )}
-                </CardContent>
-              </Card>
-            </Grid>
-          );
-        })}
-      </Grid>
-
-      {/* Mensagem quando não há planos */}
-      {planos.length === 0 && !loading && (
-        <Box sx={{ textAlign: 'center', py: 4 }}>
-          <Typography variant="h6" color="textSecondary">
-            Nenhum plano cadastrado
-          </Typography>
-          <Typography variant="body2" color="textSecondary">
-            Clique em "Novo Plano" para começar
-          </Typography>
-        </Box>
-      )}
+                ))}
+              </Box>
+              
+              <Box display="flex" gap={1} mt={2}>
+                <Button variant="outlined" size="small">
+                  Editar
+                </Button>
+                <Button variant="contained" size="small">
+                  Assinantes
+                </Button>
+              </Box>
+            </CardContent>
+          </Card>
+        ))}
+      </Box>
     </Box>
   );
 };

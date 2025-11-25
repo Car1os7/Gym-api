@@ -1,195 +1,119 @@
-import React, { useEffect, useState } from 'react';
-import {
-  Box,
-  Typography,
-  TextField,
-  Button,
-  Card,
-  CardContent,
-  Grid,
-  IconButton,
-  Chip,
-  LinearProgress,
-  Alert,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-} from '@mui/material';
-import {
-  Search as SearchIcon,
-  Add as AddIcon,
-  Edit as EditIcon,
-  Delete as DeleteIcon,
-  Person as PersonIcon,
-} from '@mui/icons-material';
-import { Membro } from '../types';
-import { membrosService } from '../services/api';
+import React, { useState } from 'react';
 
 export const Membros: React.FC = () => {
-  const [membros, setMembros] = useState<Membro[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [searchLoading, setSearchLoading] = useState(false);
+  const [busca, setBusca] = useState('');
 
-  // Buscar membros
-  const fetchMembros = async (search?: string) => {
-    try {
-      setLoading(true);
-      setError(null);
+  const membros = [
+    { id: 1, nome: 'João Silva', email: 'joao@email.com', telefone: '(11) 99999-9999', plano: 'Premium', treinos: 12 },
+    { id: 2, nome: 'Maria Santos', email: 'maria@email.com', telefone: '(11) 88888-8888', plano: 'VIP', treinos: 8 },
+    { id: 3, nome: 'Pedro Oliveira', email: 'pedro@email.com', telefone: '(11) 77777-7777', plano: 'Básico', treinos: 5 },
+    { id: 4, nome: 'Ana Costa', email: 'ana@email.com', telefone: '(11) 66666-6666', plano: 'Premium', treinos: 15 },
+    { id: 5, nome: 'Carlos Ferreira', email: 'carlos@email.com', telefone: '(11) 55555-5555', plano: 'VIP', treinos: 20 }
+  ];
 
-      let response;
-      if (search) {
-        response = await membrosService.search({ nome: search });
-        setMembros(response.data.results);
-      } else {
-        response = await membrosService.getAll();
-        setMembros(response.data);
-      }
-    } catch (err) {
-      setError('Erro ao carregar membros');
-      console.error('Erro:', err);
-    } finally {
-      setLoading(false);
-      setSearchLoading(false);
-    }
-  };
-
-  // Busca com debounce
-  useEffect(() => {
-    if (searchTerm) {
-      setSearchLoading(true);
-      const timer = setTimeout(() => {
-        fetchMembros(searchTerm);
-      }, 500);
-
-      return () => clearTimeout(timer);
-    } else {
-      fetchMembros();
-    }
-  }, [searchTerm]);
-
-  const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(event.target.value);
-  };
-
-  const handleDelete = async (id: number) => {
-    if (window.confirm('Tem certeza que deseja excluir este membro?')) {
-      try {
-        await membrosService.delete(id);
-        fetchMembros(searchTerm || undefined);
-      } catch (err) {
-        setError('Erro ao excluir membro');
-      }
-    }
-  };
+  const membrosFiltrados = membros.filter(membro =>
+    membro.nome.toLowerCase().includes(busca.toLowerCase()) ||
+    membro.email.toLowerCase().includes(busca.toLowerCase())
+  );
 
   return (
-    <Box>
-      {/* Cabeçalho */}
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Typography variant="h4">
-          Gerenciar Membros
-        </Typography>
-        <Button variant="contained" startIcon={<AddIcon />}>
-          Novo Membro
-        </Button>
-      </Box>
+    <div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
+        <h1 style={{ color: '#1976d2', margin: 0 }}>👥 Gerenciar Membros</h1>
+        <button style={{
+          padding: '10px 20px',
+          backgroundColor: '#1976d2',
+          color: 'white',
+          border: 'none',
+          borderRadius: '5px',
+          cursor: 'pointer'
+        }}>
+          + Novo Membro
+        </button>
+      </div>
 
       {/* Barra de Busca */}
-      <Box sx={{ mb: 3 }}>
-        <TextField
-          fullWidth
-          variant="outlined"
-          placeholder="Buscar membros por nome..."
-          value={searchTerm}
-          onChange={handleSearch}
-          InputProps={{
-            startAdornment: <SearchIcon sx={{ mr: 1, color: 'text.secondary' }} />,
+      <div style={{ marginBottom: '20px' }}>
+        <input
+          type="text"
+          placeholder="🔍 Buscar membros por nome ou email..."
+          value={busca}
+          onChange={(e) => setBusca(e.target.value)}
+          style={{
+            width: '100%',
+            padding: '12px',
+            border: '1px solid #ddd',
+            borderRadius: '5px',
+            fontSize: '16px'
           }}
         />
-      </Box>
-
-      {/* Loading */}
-      {(loading || searchLoading) && <LinearProgress sx={{ mb: 2 }} />}
-
-      {/* Erro */}
-      {error && (
-        <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>
-          {error}
-        </Alert>
-      )}
+      </div>
 
       {/* Lista de Membros */}
-      <Grid container spacing={3}>
-        {membros.map((membro) => (
-          <Grid item xs={12} md={6} lg={4} key={membro.id}>
-            <Card>
-              <CardContent>
-                {/* Cabeçalho do Card */}
-                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                  <PersonIcon color="primary" sx={{ mr: 1 }} />
-                  <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-                    {membro.nome}
-                  </Typography>
-                  <IconButton size="small" color="primary">
-                    <EditIcon />
-                  </IconButton>
-                  <IconButton 
-                    size="small" 
-                    color="error"
-                    onClick={() => handleDelete(membro.id)}
-                  >
-                    <DeleteIcon />
-                  </IconButton>
-                </Box>
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
+        gap: '20px'
+      }}>
+        {membrosFiltrados.map(membro => (
+          <div key={membro.id} style={{
+            padding: '20px',
+            backgroundColor: 'white',
+            borderRadius: '8px',
+            boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '15px' }}>
+              <h3 style={{ margin: 0, color: '#333' }}>{membro.nome}</h3>
+              <span style={{
+                padding: '4px 8px',
+                backgroundColor: membro.plano === 'VIP' ? '#ff5722' : '#1976d2',
+                color: 'white',
+                borderRadius: '12px',
+                fontSize: '12px'
+              }}>
+                {membro.plano}
+              </span>
+            </div>
+            
+            <div style={{ color: '#666', marginBottom: '10px' }}>
+              <div>📧 {membro.email}</div>
+              <div>📞 {membro.telefone}</div>
+              <div>🏋️ {membro.treinos} treinos</div>
+            </div>
 
-                {/* Informações do Membro */}
-                <Typography variant="body2" color="textSecondary" gutterBottom>
-                  📧 {membro.email}
-                </Typography>
-                <Typography variant="body2" color="textSecondary" gutterBottom>
-                  📞 {membro.telefone || 'Não informado'}
-                </Typography>
-                <Typography variant="body2" color="textSecondary" gutterBottom>
-                  🎂 {new Date(membro.dataNascimento).toLocaleDateString()}
-                </Typography>
-
-                {/* Plano */}
-                {membro.plano && (
-                  <Chip 
-                    label={membro.plano.nome} 
-                    size="small" 
-                    color="primary" 
-                    variant="outlined"
-                    sx={{ mt: 1 }}
-                  />
-                )}
-
-                {/* Treinos */}
-                {membro.treinos && membro.treinos.length > 0 && (
-                  <Typography variant="body2" sx={{ mt: 1 }}>
-                    🏋️ {membro.treinos.length} treino(s) agendado(s)
-                  </Typography>
-                )}
-              </CardContent>
-            </Card>
-          </Grid>
+            <div style={{ display: 'flex', gap: '10px', marginTop: '15px' }}>
+              <button style={{
+                padding: '8px 12px',
+                backgroundColor: '#e3f2fd',
+                color: '#1976d2',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '14px'
+              }}>
+                Editar
+              </button>
+              <button style={{
+                padding: '8px 12px',
+                backgroundColor: '#ffebee',
+                color: '#d32f2f',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '14px'
+              }}>
+                Excluir
+              </button>
+            </div>
+          </div>
         ))}
-      </Grid>
+      </div>
 
-      {/* Mensagem quando não há membros */}
-      {membros.length === 0 && !loading && (
-        <Box sx={{ textAlign: 'center', py: 4 }}>
-          <Typography variant="h6" color="textSecondary">
-            {searchTerm ? 'Nenhum membro encontrado' : 'Nenhum membro cadastrado'}
-          </Typography>
-          <Typography variant="body2" color="textSecondary">
-            {searchTerm ? 'Tente ajustar os termos da busca' : 'Clique em "Novo Membro" para começar'}
-          </Typography>
-        </Box>
+      {membrosFiltrados.length === 0 && (
+        <div style={{ textAlign: 'center', padding: '40px', color: '#666' }}>
+          <p>Nenhum membro encontrado</p>
+        </div>
       )}
-    </Box>
+    </div>
   );
 };
