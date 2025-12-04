@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import {
   Box,
   Card,
@@ -10,12 +10,12 @@ import {
 } from '@mui/material';
 import { Refresh, Email, Phone } from '@mui/icons-material';
 import { useApi } from '../hooks/useApi';
-import { api } from '../services/api';
+import api from '../services/api';
 import { LoadingSpinner } from './LoadingSpinner';
 
 export const UserList: React.FC = () => {
   const { data: users, loading, error, refetch } = useApi(
-    () => api.getUsers(),
+    () => api.get("/membros").then(res => res.data),
     { 
       immediate: true
     }
@@ -44,7 +44,7 @@ export const UserList: React.FC = () => {
     <Box p={3}>
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
         <Typography variant="h4" component="h2" fontWeight="bold">
-          👥 Lista de Alunos
+          ?? Lista de Alunos
         </Typography>
         <Button
           variant="contained"
@@ -57,7 +57,7 @@ export const UserList: React.FC = () => {
       </Box>
       
       <Box display="grid" gridTemplateColumns="repeat(auto-fill, minmax(300px, 1fr))" gap={3}>
-        {users?.map(user => (
+        {(Array.isArray(users) ? users : [])?.map(user => (
           <Card 
             key={user.id}
             sx={{ 
@@ -114,3 +114,5 @@ export const UserList: React.FC = () => {
     </Box>
   );
 };
+
+

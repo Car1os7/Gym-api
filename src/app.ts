@@ -1,4 +1,5 @@
-ï»¿import express from 'express';
+import express from 'express';
+import cors from 'cors';
 import swaggerUi from 'swagger-ui-express';
 import { specs } from '../docs/swagger';
 
@@ -9,6 +10,8 @@ import treinosRoutes from './routes/treinos';
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Middleware
+app.use(cors());  // ? ADICIONADO CORS
 app.use(express.json());
 
 // Swagger Documentation
@@ -21,10 +24,10 @@ app.use('/api/treinos', treinosRoutes);
 
 // Health check
 app.get('/health', (req, res) => {
-  res.json({ 
-    status: 'OK', 
+  res.json({
+    status: 'OK',
     timestamp: new Date().toISOString(),
-    message: 'Gym API estÃ¡ funcionando!',
+    message: 'Gym API está funcionando!',
     team: ['Julio Balestrin', 'Leo Stronda', 'Batista', 'Sergiao', 'Renato Cariani', 'Carlao']
   });
 });
@@ -32,18 +35,18 @@ app.get('/health', (req, res) => {
 // Rota principal
 app.get('/', (req, res) => {
   res.json({
-    message: 'Bem-vindo Ã  Gym API!',
+    message: 'Bem-vindo à Gym API!',
     documentation: '/api-docs',
     endpoints: {
       planos: '/api/planos',
-      membros: '/api/membros', 
+      membros: '/api/membros',
       treinos: '/api/treinos'
     }
   });
 });
 
 app.listen(PORT, () => {
-  console.log(`ğŸš€ Servidor rodando na porta ${PORT}`);
-  console.log(`ğŸ“š DocumentaÃ§Ã£o disponÃ­vel em: http://localhost:${PORT}/api-docs`);
-  console.log(`ğŸ¥ Health check: http://localhost:${PORT}/health`);
+  console.log(`?? Servidor rodando na porta ${PORT}`);
+  console.log(`?? Documentação disponível em: http://localhost:${PORT}/api-docs`);
+  console.log(`?? Health check: http://localhost:${PORT}/health`);
 });

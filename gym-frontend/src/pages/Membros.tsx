@@ -1,119 +1,223 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import {
+  Box,
+  TextField,
+  Button,
+  Card,
+  CardContent,
+  Typography,
+  Chip,
+  IconButton,
+  Dialog,
+  CircularProgress,
+  Alert,
+} from '@mui/material';
+import {
+  Edit as EditIcon,
+  Delete as DeleteIcon,
+  Add as AddIcon,
+  Search as SearchIcon,
+} from '@mui/icons-material';
+import { MembroForm } from '../components/MembroForm';
+import { memberService } from '../services/api';
+import type { Membro } from '../types';
 
 export const Membros: React.FC = () => {
+  const [membros, setMembros] = useState<Membro[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [busca, setBusca] = useState('');
+  const [openForm, setOpenForm] = useState(false);
+  const [editingMembro, setEditingMembro] = useState<Membro | null>(null);
 
-  const membros = [
-    { id: 1, nome: 'João Silva', email: 'joao@email.com', telefone: '(11) 99999-9999', plano: 'Premium', treinos: 12 },
-    { id: 2, nome: 'Maria Santos', email: 'maria@email.com', telefone: '(11) 88888-8888', plano: 'VIP', treinos: 8 },
-    { id: 3, nome: 'Pedro Oliveira', email: 'pedro@email.com', telefone: '(11) 77777-7777', plano: 'Básico', treinos: 5 },
-    { id: 4, nome: 'Ana Costa', email: 'ana@email.com', telefone: '(11) 66666-6666', plano: 'Premium', treinos: 15 },
-    { id: 5, nome: 'Carlos Ferreira', email: 'carlos@email.com', telefone: '(11) 55555-5555', plano: 'VIP', treinos: 20 }
-  ];
+  const loadMembros = async () => {
+    try {
+      setLoading(true);
+      const response = await memberService.getAll();
+      if (response.success && response.data) {
+        setMembros(response.data);
+      } else {
+        setError(response.error || 'Erro ao carregar membros');
+      }
+    } catch (err: any) {
+      setError('Erro ao conectar com o servidor');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadMembros();
+  }, []);
+
+  const handleDelete = async (id: string) => {
+    if (!window.confirm('Tem certeza que deseja excluir este membro?')) {
+      return;
+    }
+
+    try {
+      const response = await memberService.delete(id);
+      if (response.success) {
+        setMembros(membros.filter(m => m.id !== id));
+      } else {
+        alert(response.error || 'Erro ao excluir membro');
+      }
+    } catch (err) {
+      alert('Erro ao excluir membro');
+    }
+  };
+
+  const handleEdit = (membro: Membro) => {
+    setEditingMembro(membro);
+    setOpenForm(true);
+  };
+
+  const handleFormSuccess = () => {
+    setOpenForm(false);
+    setEditingMembro(null);
+    loadMembros();
+  };
+
+  const handleFormCancel = () => {
+    setOpenForm(false);
+    setEditingMembro(null);
+  };
 
   const membrosFiltrados = membros.filter(membro =>
     membro.nome.toLowerCase().includes(busca.toLowerCase()) ||
     membro.email.toLowerCase().includes(busca.toLowerCase())
   );
 
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return 'N�o informada';
+    return new Date(dateString).toLocaleDateString('pt-BR');
+  };
+
   return (
-    <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
-        <h1 style={{ color: '#1976d2', margin: 0 }}>👥 Gerenciar Membros</h1>
-        <button style={{
-          padding: '10px 20px',
-          backgroundColor: '#1976d2',
-          color: 'white',
-          border: 'none',
-          borderRadius: '5px',
-          cursor: 'pointer'
-        }}>
-          + Novo Membro
-        </button>
-      </div>
+    <Box>
+      <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
+        <Typography variant="h4" component="h1" color="primary">
+          ?? Gerenciar Membros
+        </Typography>
+        <Button
+          variant="contained"
+          startIcon={<AddIcon />}
+          onClick={() => setOpenForm(true)}
+        >
+          Novo Membro
+        </Button>
+      </Box>
 
-      {/* Barra de Busca */}
-      <div style={{ marginBottom: '20px' }}>
-        <input
-          type="text"
-          placeholder="🔍 Buscar membros por nome ou email..."
-          value={busca}
-          onChange={(e) => setBusca(e.target.value)}
-          style={{
-            width: '100%',
-            padding: '12px',
-            border: '1px solid #ddd',
-            borderRadius: '5px',
-            fontSize: '16px'
-          }}
-        />
-      </div>
+      <Card sx={{ mb: 3 }}>
+        <CardContent>
+          <TextField
+            fullWidth
+            variant="outlined"
+            placeholder="?? Buscar membros por nome ou email..."
+            value={busca}
+            onChange={(e) => setBusca(e.target.value)}
+            InputProps={{
+              startAdornment: <SearchIcon sx={{ mr: 1, color: 'action.active' }} />,
+            }}
+          />
+        </CardContent>
+      </Card>
 
-      {/* Lista de Membros */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
-        gap: '20px'
-      }}>
-        {membrosFiltrados.map(membro => (
-          <div key={membro.id} style={{
-            padding: '20px',
-            backgroundColor: 'white',
-            borderRadius: '8px',
-            boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-          }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '15px' }}>
-              <h3 style={{ margin: 0, color: '#333' }}>{membro.nome}</h3>
-              <span style={{
-                padding: '4px 8px',
-                backgroundColor: membro.plano === 'VIP' ? '#ff5722' : '#1976d2',
-                color: 'white',
-                borderRadius: '12px',
-                fontSize: '12px'
-              }}>
-                {membro.plano}
-              </span>
-            </div>
-            
-            <div style={{ color: '#666', marginBottom: '10px' }}>
-              <div>📧 {membro.email}</div>
-              <div>📞 {membro.telefone}</div>
-              <div>🏋️ {membro.treinos} treinos</div>
-            </div>
-
-            <div style={{ display: 'flex', gap: '10px', marginTop: '15px' }}>
-              <button style={{
-                padding: '8px 12px',
-                backgroundColor: '#e3f2fd',
-                color: '#1976d2',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                fontSize: '14px'
-              }}>
-                Editar
-              </button>
-              <button style={{
-                padding: '8px 12px',
-                backgroundColor: '#ffebee',
-                color: '#d32f2f',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                fontSize: '14px'
-              }}>
-                Excluir
-              </button>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {membrosFiltrados.length === 0 && (
-        <div style={{ textAlign: 'center', padding: '40px', color: '#666' }}>
-          <p>Nenhum membro encontrado</p>
-        </div>
+      {error && (
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {error}
+        </Alert>
       )}
-    </div>
+
+      {loading ? (
+        <Box display="flex" justifyContent="center" p={3}>
+          <CircularProgress />
+        </Box>
+      ) : membrosFiltrados.length === 0 ? (
+        <Card>
+          <CardContent sx={{ textAlign: 'center', py: 4 }}>
+            <Typography color="text.secondary">
+              {busca ? 'Nenhum membro encontrado' : 'Nenhum membro cadastrado'}
+            </Typography>
+          </CardContent>
+        </Card>
+      ) : (
+        <Box display="grid" gridTemplateColumns="repeat(auto-fill, minmax(350px, 1fr))" gap={2}>
+          {membrosFiltrados.map((membro) => (
+            <Card key={membro.id}>
+              <CardContent>
+                <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={2}>
+                  <Box>
+                    <Typography variant="h6" component="h3">
+                      {membro.nome}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      {membro.email}
+                    </Typography>
+                  </Box>
+                  <Chip
+                    label={membro.status}
+                    color={membro.status === 'ativo' ? 'success' : 'default'}
+                    size="small"
+                  />
+                </Box>
+
+                <Box mb={2}>
+                  <Typography variant="body2">
+                    <strong>?? Telefone:</strong> {membro.telefone || 'N�o informado'}
+                  </Typography>
+                  <Typography variant="body2">
+                    <strong>?? Data Nascimento:</strong> {formatDate(membro.dataNascimento)}
+                  </Typography>
+                  <Typography variant="body2">
+                    <strong>?? In�cio:</strong> {formatDate(membro.dataInicio)}
+                  </Typography>
+                  {membro.altura && (
+                    <Typography variant="body2">
+                      <strong>?? Altura:</strong> {membro.altura}cm
+                    </Typography>
+                  )}
+                  {membro.peso && (
+                    <Typography variant="body2">
+                      <strong>?? Peso:</strong> {membro.peso}kg
+                    </Typography>
+                  )}
+                </Box>
+
+                <Box display="flex" gap={1}>
+                  <IconButton
+                    size="small"
+                    color="primary"
+                    onClick={() => handleEdit(membro)}
+                  >
+                    <EditIcon />
+                  </IconButton>
+                  <IconButton
+                    size="small"
+                    color="error"
+                    onClick={() => handleDelete(membro.id)}
+                  >
+                    <DeleteIcon />
+                  </IconButton>
+                </Box>
+              </CardContent>
+            </Card>
+          ))}
+        </Box>
+      )}
+
+      <Dialog
+        open={openForm}
+        onClose={handleFormCancel}
+        maxWidth="md"
+        fullWidth
+      >
+        <MembroForm
+          initialData={editingMembro}
+          onSubmitSuccess={handleFormSuccess}
+          onCancel={handleFormCancel}
+        />
+      </Dialog>
+    </Box>
   );
 };
